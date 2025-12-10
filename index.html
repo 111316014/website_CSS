@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ian's Terminal | 星際漫遊指南</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- 變數設定 (宇宙霓虹配色) --- */
+        :root {
+            --bg-deep: #050510;         
+            --glass: rgba(15, 23, 42, 0.7); 
+            --neon-cyan: #00f3ff;       
+            --neon-purple: #bc13fe;     
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+        }
+
+        /* --- 全域設定 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* --- 🌟 關鍵：Canvas 背景 --- */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* 放在最底層 */
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); /* 深邃宇宙底色 */
+        }
+
+        /* --- 導覽列 --- */
+        header {
+            background: rgba(5, 5, 16, 0.85);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        nav a {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        /* --- 主要內容區 --- */
+        main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        article {
+            background: var(--glass);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(5px);
+            transition: all 0.4s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        article:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', 'Noto Sans TC', monospace;
+            color: var(--neon-cyan);
+            border-bottom: 1px dashed var(--text-muted);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            display: inline-block;
+            text-shadow: 0 0 5px rgba(0,243,255,0.5);
+        }
+
+        /* --- Hero Area --- */
+        .hero-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .profile-img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hero-text h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+
+        .role-badge {
+            background: rgba(188, 19, 254, 0.2);
+            color: var(--neon-purple);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            border: 1px solid var(--neon-purple);
+            margin-right: 10px;
+        }
+
+        .yt-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+            color: white;
+            padding: 12px 30px;
+            margin-top: 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .yt-btn:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+        }
+
+        /* --- 技能卡片 --- */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .skill-tag {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--text-muted);
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .skill-tag:hover {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+            background: rgba(188, 19, 254, 0.1);
+        }
+
+        /* --- 媒體與地圖 --- */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        video, img, audio {
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        figure { margin: 0; }
+        figcaption {
+            background: linear-gradient(to top, #000, transparent);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 5px;
+            text-align: center;
+            color: #ddd;
+        }
+
+        footer {
+            text-align: center;
+            padding: 50px 0;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            border-top: 1px solid #333;
+            background: #020205;
+        }
+
+        /* 手機版調整 */
+        @media (max-width: 768px) {
+            .hero-content { flex-direction: column; text-align: center; }
+            .nav-container { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="starfield"></canvas>
+
+    <header>
+        <div class="nav-container">
+            <div class="logo"><Ian_Dev /></div>
+            <nav>
+                <a href="#section1">基地</a>
+                <a href="#section2">歷程</a>
+                <a href="#section3">技能</a>
+                <a href="#section4">作品</a>
+                <a href="#section7">機密</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        
+        <article id="section1">
+            <div class="hero-content">
+                <img src="assets/picture/01.jpeg" alt="Ian" class="profile-img">
+                <div class="hero-text">
+                    <div>
+                        <span class="role-badge">程式開發</span>
+                        <span class="role-badge" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">星鐵開拓者</span>
+                    </div>
+                    <h1 style="margin-top: 10px;">IAN :: 果詣恩</h1>
+                    <p style="color: var(--text-muted);">
+                        > 系統狀態：運作中 🟢<br>
+                        > 目前位置：地球伺服器 [台北]<br>
+                        > 當前任務：精通 Java/C++/Python 並征服深淵。<br>
+                        <br>
+                        標準廢物大學生，但擁有改變程式碼（與製造 Bug）的能力。
+                        專精於《崩壞：星穹鐵道》的平民戰術研究。
+                    </p>
+                    <a href="https://www.youtube.com/@%E9%82%8A%E7%B7%A3%E4%BA%BA0816" target="_blank" class="yt-btn">
+                        <i class="fa-solid fa-play"></i> 啟動 YouTube 頻道
+                    </a>
+                </div>
+            </div>
+        </article>
+
+        <article id="section2">
+            <header>
+                <h2>// 生存歷程紀錄</h2>
+            </header>
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0 15px;">
+                <tr>
+                    <td style="color: var(--neon-cyan); font-family: 'JetBrains Mono'; vertical-align: top; width: 140px;">2024-NOW</td>
+                    <td style="border-left: 2px solid var(--neon-purple); padding-left: 20px;">
+                        <strong style="font-size: 1.1em;">國立台北教育大學 資訊科學系</strong>
+                        <div style="color: var(--text-muted); font-size: 0.9em;">系統架構學習中...</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="color: var(--neon-cyan); font-family: 'JetBrains Mono'; vertical-align: top;">2006-NOW</td>
+                    <td style="border-left: 2px solid var(--neon-purple); padding-left: 20px;">
+                        <strong style="font-size: 1.1em;">地球 Online 資深玩家</strong>
+                        <div style="color: var(--text-muted); font-size: 0.9em;">生存難度：Hard</div>
+                    </td>
+                </tr>
+            </table>
+        </article>
+
+        <article id="section3">
+            <header>
+                <h2>// 技能晶片模組</h2>
+            </header>
+            <div class="skills-grid">
+                <div class="skill-tag">
+                    <i class="fa-brands fa-java" style="font-size: 2rem; margin-bottom: 10px; color: #f89820;"></i>
+                    <div style="font-family: 'JetBrains Mono';">JAVA</div>
+                </div>
+                <div class="skill-tag">
+                    <i class="fa-solid fa-c" style="font-size: 2rem; margin-bottom: 10px; color: #00599C;"></i>
+                    <div style="font-family: 'JetBrains Mono';">C++</div>
+                </div>
+                <div class="skill-tag">
+                    <i class="fa-brands fa-python" style="font-size: 2rem; margin-bottom: 10px; color: #3776AB;"></i>
+                    <div style="font-family: 'JetBrains Mono';">PYTHON</div>
+                </div>
+                <div class="skill-tag">
+                    <i class="fa-solid fa-gamepad" style="font-size: 2rem; margin-bottom: 10px; color: var(--neon-purple);"></i>
+                    <div style="font-family: 'JetBrains Mono';">星穹鐵道</div>
+                </div>
+            </div>
+        </article>
+
+        <article id="section4">
+            <header>
+                <h2>// 多媒體資料庫</h2>
+            </header>
+            
+            <p style="color: var(--neon-cyan); margin-bottom: 10px;">[偵測到音訊檔案]</p>
+            <div style="border: 1px solid var(--neon-purple); padding: 10px; border-radius: 5px; background: rgba(188, 19, 254, 0.1);">
+                <audio controls>
+                    <source src="assets/audio/Text Me Back.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+
+            <p style="color: var(--neon-cyan); margin: 30px 0 10px 0;">[視訊檔案載入完畢]</p>
+            <div class="media-grid">
+                <div>
+                    <video controls>
+                        <source src="assets/video/videoplayback.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div>
+                    <video controls>
+                        <source src="assets/video/你染上MyGO了？！.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+
+            <p style="color: var(--neon-cyan); margin: 30px 0 10px 0;">[影像生成輸出]</p>
+            <div class="media-grid">
+                <figure>
+                    <img src="assets/picture/圖片1.png" alt="AI Art">
+                    <figcaption>風景渲染_01</figcaption>
+                </figure>
+                <figure>
+                    <img src="assets/picture/02.png" alt="AI Art">
+                    <figcaption>產品設計_02</figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <article id="section7">
+            <header>
+                <h2>// 機密檔案區</h2>
+            </header>
+            <div style="height: 500px; border: 1px solid var(--text-muted);">
+                <embed src="assets/picture/期中專案影片製作-第12組.pdf" width="100%" height="100%">
+            </div>
+            
+            <br>
+            
+            <div style="border: 1px solid var(--neon-cyan); overflow: hidden; filter: invert(90%) hue-rotate(180deg) grayscale(20%);">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3615.2784024338266!2d121.54206247541927!3d25.02462437782254!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a908a8232611%3A0xeebfb2d71a5025c7!2z5ZyL56uL6Ie65YyX5pWZ6IKy5aSn5a24!5e0!3m2!1szh-TW!2stw!4v1731827435609!5m2!1szh-TW!2stw" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>        
+            </div>
+        </article>
+
+    </main>
+    
+    <footer>
+        <p>SYSTEM_ID: IAN-2025 // 連線已終止</p>
+        <p style="margin-top: 10px;">
+            <a href="mailto:s111316014@stu.ntue.edu.tw" style="color: var(--text-muted); text-decoration: none;">
+                [聯絡管理員]
+            </a>
+        </p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        // 星星的設定
+        const starCount = 400; // 星星數量
+        const stars = [];
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * width; // 隨機位置
+                this.y = Math.random() * height;
+                this.z = Math.random() * width; // 深度
+            }
+
+            update() {
+                // 讓星星往畫面移動 (模擬飛船前進)
+                this.z -= 10; // 移動速度
+                
+                // 如果星星跑到螢幕後面，重置到遠方
+                if (this.z <= 0) {
+                    this.z = width;
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                }
+            }
+
+            draw() {
+                // 計算透視效果
+                const x = (this.x - width / 2) * (width / this.z) + width / 2;
+                const y = (this.y - height / 2) * (width / this.z) + height / 2;
+                
+                // 星星變大 (越近越大)
+                const size = (width / this.z) * 1.5;
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 初始化星星
+        for (let i = 0; i < starCount; i++) {
+            stars.push(new Star());
+        }
+
+        // 動畫迴圈
+        function animate() {
+            // 畫布背景塗黑 (帶一點透明度，產生拖尾效果)
+            ctx.fillStyle = 'rgba(5, 5, 16, 0.4)';
+            ctx.fillRect(0, 0, width, height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // 處理視窗大小改變
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        animate(); // 啟動引擎！
+    </script>
+</body>
+</html>
