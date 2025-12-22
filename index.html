@@ -19,6 +19,7 @@
             --neon-purple: #bc13fe;     
             --text-main: #e0e6ed;
             --text-muted: #94a3b8;
+            --hole-bg: #0f172a; /* 遊戲洞穴顏色 */
         }
 
         /* --- 全域設定 --- */
@@ -236,10 +237,127 @@
             background: #020205;
         }
 
+        /* --- 🎮 遊戲模組 CSS (整合版) --- */
+        .game-dashboard {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--text-muted);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono';
+            display: block;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: 'JetBrains Mono';
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+        }
+
+        .hole {
+            background-color: var(--hole-bg);
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            cursor: crosshair;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: inset 0 0 10px #000;
+            aspect-ratio: 1 / 1;
+        }
+
+        .mole {
+            position: absolute;
+            bottom: -100%;
+            width: 90%;
+            height: 90%;
+            left: 5%;
+            transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .hole.up .mole {
+            bottom: 0;
+            pointer-events: auto;
+        }
+
+        .mole.hit { animation: shake 0.1s ease-in-out infinite; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-4px, 0); }
+            75% { transform: translate(4px, 0); }
+        }
+
+        /* 黃金地鼠特效 */
+        .hole.bonus .mole-body { fill: #f59e0b; filter: drop-shadow(0 0 5px gold); }
+        .hole.bonus { border-color: #f59e0b; box-shadow: 0 0 15px gold; }
+
+        .start-btn {
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            padding: 10px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            transition: 0.3s;
+            font-family: 'JetBrains Mono';
+        }
+        .start-btn:hover { box-shadow: 0 0 15px var(--neon-cyan); }
+        .start-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+        .floating-score {
+            position: absolute;
+            top: 20%; left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            font-weight: 900;
+            pointer-events: none;
+            animation: floatUp 0.7s ease-out forwards;
+            z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { transform: translate(-50%, 0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translate(-50%, -80px); opacity: 0; }
+        }
+        .score-plus { color: var(--neon-cyan); text-shadow: 0 0 5px black; }
+        .score-minus { color: #ff3333; text-shadow: 0 0 5px black; }
+        .score-bonus { color: gold; font-size: 2rem; text-shadow: 0 0 5px black; }
+
+        .hidden { display: none; }
+
         /* 手機版調整 */
         @media (max-width: 768px) {
             .hero-content { flex-direction: column; text-align: center; }
             .nav-container { flex-direction: column; gap: 15px; }
+            .game-grid { gap: 10px; padding: 10px; }
         }
     </style>
 </head>
@@ -255,7 +373,7 @@
                 <a href="#section2">歷程</a>
                 <a href="#section3">技能</a>
                 <a href="#section4">作品</a>
-                <a href="#section7">機密</a>
+                <a href="#section-game">娛樂</a> <a href="#section7">機密</a>
             </nav>
         </div>
     </header>
@@ -348,7 +466,7 @@
             <div class="media-grid">
                 <div>
                     <video controls>
-                        <source src="assets/video/videoplayback.mp4" type="video/mp4">
+                        <source src="assets/video/Produce_8 .mp4" type="video/mp4">
                     </video>
                 </div>
                 <div>
@@ -369,6 +487,36 @@
                     <figcaption>產品設計_02</figcaption>
                 </figure>
             </div>
+        </article>
+
+        <article id="section-game">
+            <header>
+                <h2>// 系統娛樂模組：打地鼠</h2>
+            </header>
+            
+            <div class="game-dashboard">
+                <div class="stat-box">
+                    <span class="stat-label">TIME</span>
+                    <div class="stat-value" style="color: #ff3333;" id="time-left">60</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">SCORE</span>
+                    <div class="stat-value" style="color: var(--neon-cyan);" id="score">0</div>
+                </div>
+            </div>
+
+            <div id="game-message" class="hidden" style="text-align: center; margin-bottom: 20px;">
+                <p style="color: var(--neon-cyan); font-weight: bold; font-size: 1.2rem;">
+                    >> 遊戲結束！最終得分：<span id="final-score" style="color: #fff;">0</span>
+                </p>
+            </div>
+
+            <div class="game-grid" id="game-grid">
+                </div>
+
+            <button id="start-button" class="start-btn">
+                > 初始化挑戰程序
+            </button>
         </article>
 
         <article id="section7">
@@ -397,77 +545,239 @@
         </p>
     </footer>
 
+    <template id="mole-template">
+        <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+            <path class="mole-body" d="M10 90 Q10 20 50 20 T90 90 Z" fill="#64748b" />
+            <ellipse class="mole-face" cx="50" cy="65" rx="30" ry="25" fill="#94a3b8" />
+            <circle cx="50" cy="75" r="3" fill="#000" />
+            <g class="normal-eyes">
+                <circle cx="40" cy="60" r="3" fill="#000" />
+                <circle cx="60" cy="60" r="3" fill="#000" />
+            </g>
+            <g class="hit-eyes hidden">
+                <line x1="37" y1="57" x2="43" y2="63" stroke="#000" stroke-width="2" />
+                <line x1="37" y1="63" x2="43" y2="57" stroke="#000" stroke-width="2" />
+                <line x1="57" y1="57" x2="63" y2="63" stroke="#000" stroke-width="2" />
+                <line x1="57" y1="63" x2="63" y2="57" stroke="#000" stroke-width="2" />
+            </g>
+            <g class="bonus-crown hidden">
+                <path d="M35 30 L40 20 L50 30 L60 20 L65 30 Z" fill="#FFD700" stroke="#CCAD00" stroke-width="1"/>
+            </g>
+        </svg>
+    </template>
+
     <script>
+        // --- 背景星空動畫 ---
         const canvas = document.getElementById('starfield');
         const ctx = canvas.getContext('2d');
-
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
-
-        // 星星的設定
-        const starCount = 400; // 星星數量
         const stars = [];
-
         class Star {
             constructor() {
-                this.x = Math.random() * width; // 隨機位置
+                this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.z = Math.random() * width; // 深度
+                this.z = Math.random() * width;
             }
-
             update() {
-                // 讓星星往畫面移動 (模擬飛船前進)
-                this.z -= 10; // 移動速度
-                
-                // 如果星星跑到螢幕後面，重置到遠方
+                this.z -= 10;
                 if (this.z <= 0) {
                     this.z = width;
                     this.x = Math.random() * width;
                     this.y = Math.random() * height;
                 }
             }
-
             draw() {
-                // 計算透視效果
                 const x = (this.x - width / 2) * (width / this.z) + width / 2;
                 const y = (this.y - height / 2) * (width / this.z) + height / 2;
-                
-                // 星星變大 (越近越大)
                 const size = (width / this.z) * 1.5;
-
                 ctx.fillStyle = '#fff';
                 ctx.beginPath();
                 ctx.arc(x, y, size, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
-
-        // 初始化星星
-        for (let i = 0; i < starCount; i++) {
-            stars.push(new Star());
-        }
-
-        // 動畫迴圈
+        for (let i = 0; i < 400; i++) stars.push(new Star());
         function animate() {
-            // 畫布背景塗黑 (帶一點透明度，產生拖尾效果)
             ctx.fillStyle = 'rgba(5, 5, 16, 0.4)';
             ctx.fillRect(0, 0, width, height);
-
-            stars.forEach(star => {
-                star.update();
-                star.draw();
-            });
-
+            stars.forEach(star => { star.update(); star.draw(); });
             requestAnimationFrame(animate);
         }
-
-        // 處理視窗大小改變
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
         });
+        animate();
 
-        animate(); // 啟動引擎！
+        // --- 🎮 遊戲邏輯 Script ---
+        const GAME_DURATION = 60;
+        const SCORE_PER_WHACK = 10;
+        const MISS_PENALTY = 5;
+        const BONUS_HOLE_INDEX = 4;
+        const BONUS_APPEAR_INTERVAL = 15000;
+        const BONUS_DURATION = 5000;
+
+        let score = 0;
+        let timeLeft = GAME_DURATION;
+        let gameActive = false;
+        let lastHole = null;
+        let gameInterval = null;
+        let bonusInterval = null;
+        let holesArray = [];
+
+        const grid = document.getElementById('game-grid');
+        const scoreDisplay = document.getElementById('score');
+        const timeLeftDisplay = document.getElementById('time-left');
+        const startBtn = document.getElementById('start-button');
+        const message = document.getElementById('game-message');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const moleTemplate = document.getElementById('mole-template');
+
+        function initGame() {
+            grid.innerHTML = '';
+            holesArray = [];
+            for (let i = 0; i < 9; i++) {
+                const hole = document.createElement('div');
+                hole.className = 'hole';
+                hole.dataset.index = i;
+                
+                const moleContainer = document.createElement('div');
+                moleContainer.className = 'mole';
+                moleContainer.innerHTML = moleTemplate.innerHTML;
+
+                hole.appendChild(moleContainer);
+                hole.onmousedown = (e) => handleHoleClick(i, e); // 改用 mousedown 提升反應速度
+                grid.appendChild(hole);
+                holesArray.push(hole);
+            }
+        }
+
+        function handleHoleClick(index, e) {
+            if (!gameActive) return;
+            const hole = holesArray[index];
+            if (!hole) return;
+            const isUp = hole.classList.contains('up');
+            if (isUp) {
+                const isBonus = hole.classList.contains('bonus');
+                whack(hole, isBonus);
+            } else {
+                miss(hole);
+            }
+            e.stopPropagation();
+        }
+
+        function whack(hole, isBonus) {
+            score += SCORE_PER_WHACK;
+            scoreDisplay.textContent = score;
+            const mole = hole.querySelector('.mole');
+            mole.classList.add('hit');
+            const normalEyes = mole.querySelector('.normal-eyes');
+            const hitEyes = mole.querySelector('.hit-eyes');
+            if (normalEyes) normalEyes.classList.add('hidden');
+            if (hitEyes) hitEyes.classList.remove('hidden');
+
+            showFloatingScore(hole, `+${SCORE_PER_WHACK}`, isBonus ? 'score-bonus' : 'score-plus');
+
+            if (!isBonus) {
+                setTimeout(() => {
+                    hole.classList.remove('up');
+                    resetMoleState(mole);
+                }, 100);
+            } else {
+                setTimeout(() => {
+                    mole.classList.remove('hit');
+                    resetMoleState(mole);
+                }, 100);
+            }
+        }
+
+        function miss(hole) {
+            score = Math.max(0, score - MISS_PENALTY);
+            scoreDisplay.textContent = score;
+            showFloatingScore(hole, `-${MISS_PENALTY}`, 'score-minus');
+        }
+
+        function resetMoleState(mole) {
+            mole.classList.remove('hit');
+            const normalEyes = mole.querySelector('.normal-eyes');
+            const hitEyes = mole.querySelector('.hit-eyes');
+            if (normalEyes) normalEyes.classList.remove('hidden');
+            if (hitEyes) hitEyes.classList.add('hidden');
+        }
+
+        function showFloatingScore(parent, text, className) {
+            const feedback = document.createElement('div');
+            feedback.textContent = text;
+            feedback.className = `floating-score ${className}`;
+            parent.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 700);
+        }
+
+        function peep() {
+            if (!gameActive) return;
+            const availableHoles = holesArray.filter(h => parseInt(h.dataset.index) !== BONUS_HOLE_INDEX);
+            const hole = availableHoles[Math.floor(Math.random() * availableHoles.length)];
+            if (hole === lastHole) return peep();
+            lastHole = hole;
+            const time = Math.random() * 800 + 400;
+            hole.classList.add('up');
+            setTimeout(() => {
+                if (hole && !hole.classList.contains('bonus')) hole.classList.remove('up');
+                if (gameActive) peep();
+            }, time);
+        }
+
+        function spawnBonus() {
+            if (!gameActive) return;
+            const bonusHole = holesArray[BONUS_HOLE_INDEX];
+            bonusHole.classList.add('up', 'bonus');
+            const crown = bonusHole.querySelector('.bonus-crown');
+            if (crown) crown.classList.remove('hidden');
+            setTimeout(() => {
+                bonusHole.classList.remove('up', 'bonus');
+                if (crown) crown.classList.add('hidden');
+            }, BONUS_DURATION);
+        }
+
+        function startGame() {
+            if (gameActive) return;
+            gameActive = true;
+            score = 0;
+            timeLeft = GAME_DURATION;
+            scoreDisplay.textContent = '0';
+            timeLeftDisplay.textContent = timeLeft;
+            startBtn.disabled = true;
+            startBtn.textContent = '> 挑戰進行中...';
+            message.classList.add('hidden');
+            
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeLeftDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+            peep();
+            spawnBonus();
+            bonusInterval = setInterval(spawnBonus, BONUS_APPEAR_INTERVAL);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(bonusInterval);
+            startBtn.disabled = false;
+            startBtn.textContent = '> 重新開始挑戰';
+            finalScoreDisplay.textContent = score;
+            message.classList.remove('hidden');
+            holesArray.forEach(h => {
+                h.classList.remove('up', 'bonus');
+                const crown = h.querySelector('.bonus-crown');
+                if (crown) crown.classList.add('hidden');
+            });
+        }
+
+        startBtn.onclick = startGame;
+        initGame();
     </script>
 </body>
 </html>
